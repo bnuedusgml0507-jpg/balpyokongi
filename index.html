@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff2f7">
+  <meta name="description" content="학생별 발표 횟수를 귀엽게 기록하는 발표콩이 웹 앱">
+  <title>발표콩이 · 우리 반 발표 기록</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #503947;
+      --muted: #927987;
+      --pink: #df5e99;
+      --pink-dark: #c84982;
+      --pink-soft: #ffe5f0;
+      --lavender: #eee9ff;
+      --yellow: #fff4ce;
+      --mint: #e1f7ee;
+      --page: #fff8fb;
+      --white: #fff;
+      --shadow: 0 16px 42px rgba(161, 93, 127, .11);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 6%, rgba(255, 218, 235, .8), transparent 24rem),
+        radial-gradient(circle at 93% 22%, rgba(235, 229, 255, .7), transparent 22rem),
+        var(--page);
+      font-family: "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 34px 0 40px; }
+    .hero {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      overflow: hidden;
+      min-height: 218px;
+      padding: 34px 42px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: 32px;
+      background: linear-gradient(118deg, #ffe5f0 0%, #fff0f5 55%, #f0ecff 100%);
+      box-shadow: var(--shadow);
+    }
+    .hero::after { content: ""; position: absolute; width: 240px; height: 240px; right: 112px; top: -140px; border-radius: 50%; background: rgba(255,255,255,.38); }
+    .hero-copy { position: relative; z-index: 1; }
+    .eyebrow { margin: 0 0 10px; color: var(--pink-dark); font-size: 13px; font-weight: 800; letter-spacing: .11em; }
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 48px); line-height: 1.12; letter-spacing: -.055em; }
+    .subtitle { margin: 13px 0 0; color: #806777; font-size: 16px; }
+    .hero-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; padding: 8px 13px; border-radius: 99px; background: rgba(255,255,255,.72); color: #795f70; font-size: 12px; font-weight: 700; }
+    .bunny { position: relative; z-index: 1; flex: 0 0 142px; width: 142px; height: 142px; margin-right: 24px; border-radius: 48% 48% 45% 45%; background: #fff; box-shadow: 0 12px 28px rgba(191, 110, 148, .18); transform: rotate(3deg); }
+    .ear { position: absolute; top: -48px; width: 36px; height: 78px; border-radius: 99px; background: white; box-shadow: inset 0 -3px 0 #f5dbe7; }
+    .ear::after { content: ""; position: absolute; inset: 11px 10px 14px; border-radius: 99px; background: #f9bfd8; }
+    .ear.left { left: 27px; transform: rotate(-12deg); }
+    .ear.right { right: 27px; transform: rotate(12deg); }
+    .eye { position: absolute; top: 59px; width: 9px; height: 12px; border-radius: 50%; background: #5a4050; }
+    .eye.left { left: 43px; } .eye.right { right: 43px; }
+    .cheek { position: absolute; top: 78px; width: 22px; height: 12px; border-radius: 50%; background: #ffcddd; }
+    .cheek.left { left: 23px; } .cheek.right { right: 23px; }
+    .nose { position: absolute; top: 77px; left: 65px; width: 12px; height: 9px; border-radius: 50% 50% 60% 60%; background: #eb83ac; }
+    .mouth { position: absolute; top: 85px; left: 69px; width: 4px; height: 10px; border-left: 2px solid #805a70; border-right: 2px solid #805a70; }
+    .hero-heart { position: absolute; right: -4px; top: 25px; font-size: 25px; color: #f38db8; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0 30px; }
+    .stat { padding: 19px 22px; border: 1px solid #f5e5ed; border-radius: 22px; background: rgba(255,255,255,.9); box-shadow: 0 8px 24px rgba(161, 93, 127, .06); }
+    .stat-label { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .stat-value { margin-top: 5px; color: var(--pink-dark); font-size: 28px; font-weight: 900; letter-spacing: -.04em; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+    .section-title { margin: 0; font-size: 21px; letter-spacing: -.04em; }
+    .tools { display: flex; align-items: center; gap: 9px; }
+    .search { width: 170px; padding: 10px 13px; border: 1px solid #efdde7; border-radius: 13px; background: #fff; color: var(--ink); outline: none; }
+    .search:focus { border-color: #e88db5; box-shadow: 0 0 0 3px rgba(223,94,153,.12); }
+    .reset { padding: 10px 14px; border: 1px solid #efdde7; border-radius: 13px; background: #fff; color: #866c7b; font-size: 13px; font-weight: 700; }
+    .reset:hover { background: #fff0f6; color: var(--pink-dark); }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .card { position: relative; min-height: 158px; padding: 18px; overflow: hidden; border: 1px solid #f4e7ed; border-radius: 23px; background: #fff; box-shadow: 0 8px 22px rgba(161, 93, 127, .055); transition: transform .16s ease, box-shadow .16s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(161, 93, 127, .11); }
+    .card::after { content: ""; position: absolute; right: -28px; top: -34px; width: 92px; height: 92px; border-radius: 50%; background: var(--card-tint, var(--pink-soft)); opacity: .75; }
+    .card:nth-child(4n+2) { --card-tint: var(--lavender); }
+    .card:nth-child(4n+3) { --card-tint: var(--yellow); }
+    .card:nth-child(4n) { --card-tint: var(--mint); }
+    .card-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; }
+    .student { font-size: 15px; font-weight: 800; }
+    .star { color: #eaa0bf; font-size: 15px; }
+    .count { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 5px; margin: 18px 0 13px; }
+    .count strong { color: var(--pink-dark); font-size: 34px; line-height: 1; letter-spacing: -.06em; }
+    .count span { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .card-actions { position: relative; z-index: 1; display: flex; gap: 8px; }
+    .minus, .plus { height: 37px; border: 0; border-radius: 12px; font-weight: 800; transition: transform .12s ease, background .12s ease; }
+    .minus { width: 42px; background: #fff0f6; color: #bf7395; font-size: 21px; }
+    .minus:disabled { cursor: default; opacity: .45; }
+    .plus { flex: 1; background: var(--pink); color: #fff; font-size: 13px; box-shadow: 0 5px 12px rgba(223,94,153,.2); }
+    .minus:not(:disabled):hover, .plus:hover { transform: translateY(-1px); }
+    .plus:hover { background: var(--pink-dark); }
+    button:focus-visible { outline: 3px solid #f0a1c2; outline-offset: 2px; }
+    .empty { grid-column: 1/-1; padding: 44px 20px; border: 1px dashed #eacbd9; border-radius: 20px; color: var(--muted); text-align: center; }
+    footer { margin-top: 23px; color: #a18a98; font-size: 12px; text-align: center; }
+    .toast { position: fixed; left: 50%; bottom: 22px; z-index: 5; padding: 11px 17px; border-radius: 99px; background: #5a4050; color: #fff; font-size: 13px; opacity: 0; transform: translate(-50%, 12px); transition: .2s ease; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 850px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bunny { margin-right: 5px; transform: scale(.86) rotate(3deg); } }
+    @media (max-width: 620px) { .app { width: min(100% - 24px, 480px); padding-top: 14px; } .hero { min-height: 188px; padding: 25px 23px; border-radius: 25px; } .subtitle { max-width: 245px; font-size: 14px; line-height: 1.55; } .hero-note { font-size: 11px; } .bunny { flex-basis: 98px; width: 98px; height: 98px; margin: 0 -10px 0 -2px; transform: scale(.72) rotate(3deg); transform-origin: center; } .stats { gap: 8px; margin: 13px 0 24px; } .stat { padding: 13px 11px; border-radius: 17px; } .stat-label { font-size: 11px; } .stat-value { font-size: 23px; } .toolbar { align-items: flex-start; flex-direction: column; } .tools { width: 100%; } .search { flex: 1; width: auto; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .card { min-height: 151px; padding: 15px; border-radius: 19px; } .count strong { font-size: 31px; } }
+    @media (max-width: 370px) { .bunny { display: none; } .grid { gap: 8px; } .card { padding: 13px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">OUR CLASS · PRESENTATION RECORD</p>
+        <h1>발표콩이 <span aria-hidden="true">🌸</span></h1>
+        <p class="subtitle">한 번의 용기 있는 발표를<br>콩이와 함께 차곡차곡 모아요!</p>
+        <div class="hero-note"><span aria-hidden="true">♡</span> 학생 1–11번 · 31–42번</div>
+      </div>
+      <div class="bunny" aria-hidden="true">
+        <i class="ear left"></i><i class="ear right"></i>
+        <i class="eye left"></i><i class="eye right"></i>
+        <i class="cheek left"></i><i class="cheek right"></i>
+        <i class="nose"></i><i class="mouth"></i><span class="hero-heart">♥</span>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="발표 현황">
+      <div class="stat"><div class="stat-label">우리 반 발표</div><div class="stat-value" id="total">0회</div></div>
+      <div class="stat"><div class="stat-label">기록한 친구</div><div class="stat-value" id="active">0명</div></div>
+      <div class="stat"><div class="stat-label">함께하는 학생</div><div class="stat-value">23명</div></div>
+    </section>
+
+    <section aria-labelledby="students-heading">
+      <div class="toolbar">
+        <h2 class="section-title" id="students-heading">우리 반 친구들 <span aria-hidden="true">🐾</span></h2>
+        <div class="tools">
+          <input class="search" id="search" type="search" inputmode="numeric" placeholder="번호 찾기" aria-label="학생 번호 검색">
+          <button class="reset" id="reset" type="button">기록 초기화</button>
+        </div>
+      </div>
+      <div class="grid" id="grid" aria-live="polite"></div>
+    </section>
+    <footer>기록은 이 브라우저에 자동 저장돼요 · 다른 기기와는 공유되지 않습니다</footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const ids = [...Array.from({ length: 11 }, (_, i) => i + 1), ...Array.from({ length: 12 }, (_, i) => i + 31)];
+      const storageKey = 'balpyokongi-presentation-counts-v1';
+      const grid = document.getElementById('grid');
+      const totalEl = document.getElementById('total');
+      const activeEl = document.getElementById('active');
+      const search = document.getElementById('search');
+      const toast = document.getElementById('toast');
+      let counts = Object.fromEntries(ids.map(id => [id, 0]));
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        for (const id of ids) {
+          const value = Number(saved[id]);
+          if (Number.isSafeInteger(value) && value >= 0) counts[id] = value;
+        }
+      } catch (_) { /* 브라우저 저장소를 쓸 수 없으면 현재 화면에서만 기록합니다. */ }
+
+      function save() {
+        try { localStorage.setItem(storageKey, JSON.stringify(counts)); }
+        catch (_) { showToast('브라우저 저장 공간을 사용할 수 없어요.'); }
+      }
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+      function render() {
+        const total = ids.reduce((sum, id) => sum + counts[id], 0);
+        totalEl.textContent = `${total}회`;
+        activeEl.textContent = `${ids.filter(id => counts[id] > 0).length}명`;
+        const query = search.value.trim();
+        const shown = ids.filter(id => !query || String(id).includes(query));
+        if (!shown.length) {
+          grid.innerHTML = '<div class="empty">해당 번호의 친구를 찾지 못했어요. 번호를 다시 확인해 주세요.</div>';
+          return;
+        }
+        grid.innerHTML = shown.map(id => `
+          <article class="card" aria-label="학생 ${id}번 발표 ${counts[id]}회">
+            <div class="card-top"><span class="student">학생 ${id}번</span><span class="star" aria-hidden="true">✿</span></div>
+            <div class="count"><strong>${counts[id]}</strong><span>회 발표했어요</span></div>
+            <div class="card-actions">
+              <button class="minus" type="button" data-action="minus" data-id="${id}" aria-label="학생 ${id}번 발표 횟수 줄이기" ${counts[id] === 0 ? 'disabled' : ''}>−</button>
+              <button class="plus" type="button" data-action="plus" data-id="${id}" aria-label="학생 ${id}번 발표 횟수 올리기">+ 발표했어요</button>
+            </div>
+          </article>`).join('');
+      }
+      grid.addEventListener('click', event => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const id = Number(button.dataset.id);
+        if (button.dataset.action === 'plus') { counts[id] += 1; showToast(`학생 ${id}번, 멋진 발표였어요! ✨`); }
+        else if (counts[id] > 0) counts[id] -= 1;
+        save(); render();
+      });
+      search.addEventListener('input', render);
+      document.getElementById('reset').addEventListener('click', () => {
+        if (!confirm('모든 학생의 발표 기록을 0회로 초기화할까요?')) return;
+        counts = Object.fromEntries(ids.map(id => [id, 0]));
+        save(); render(); showToast('발표 기록을 초기화했어요.');
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
